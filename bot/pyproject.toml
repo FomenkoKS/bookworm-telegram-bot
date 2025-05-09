@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "bookworm"
+version = "0.1.0"
+description = ""
+authors = ["Kirill Fomenko <mail@fomenkoks.ru>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "*"
+aiogram = "2.14.3"
+python-dotenv = "^0.19.2"
+loguru = "^0.6.0"
+google-genai = "1.14.0"
+google_api-python-client = "1.8.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,9 @@
+# Default ignored files
+/.idea/
+/__pycache__
+/venv/
+/.python-version
+/bot/.env
+/bot/logs/
+bot/__pycache__/
+/bot/creds.json
