@@ -22,14 +22,14 @@ SYS_PROMPT_CUSTOMER_SERVICE = "Ты помощник в книжном клуб�
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
-client = OpenAI(api_key=OPEN_API_KEY)
+oai_client = OpenAI(api_key=OPEN_API_KEY)
+g_client = GoogleAPIClient(book_id=SPREADSHEET_ID, sheet_title=RANGE_NAME)
 
 def get_title_and_choices():
     # выясняем номер заседания
     meeting = ''
-    client = GoogleAPIClient(book_id=SPREADSHEET_ID, sheet_title=RANGE_NAME)
-    data = client.get_sheet(dictionary=False)
     
+    data = g_client.get_sheet(dictionary=False)
     for line in data:
         if len(line) > 5 and 'седание' in line[5]:
             meeting = line[5]
@@ -56,40 +56,10 @@ def get_title_and_choices():
             
     return title, books
 
-def get_binance_avg_price(symbol):
-    # Определяем временные метки для начала и конца предыдущего месяца
-    now = datetime.datetime.now()
-    first_day = (now - datetime.timedelta(days=30))
-    start_timestamp = int(first_day.timestamp() * 1000)
-    end_timestamp = int(now.timestamp() * 1000)
-
-    # Параметры для API запроса
-    url = "https://api.binance.com/api/v3/klines"
-    params = {
-        "symbol": symbol,
-        "interval": "1d",  # дневные свечи
-        "startTime": start_timestamp,
-        "endTime": end_timestamp
-    }
-    
-    # Запрос данных с Binance
-    response = requests.get(url, params=params)
-    data = response.json()
-    
-    # Вычисление среднего значения для каждого дня
-    avg_prices = []
-    for day in data:
-        open_price = float(day[1])
-        close_price = float(day[4])
-        avg_price = (open_price + close_price) / 2
-        avg_prices.append(avg_price)
-    
-    return avg_prices
-
 def describe_book(book_title, author):
     """Отправка запроса на описание книги"""
     
-    response = client.responses.create(
+    response = oai_client.responses.create(
         instructions=SYS_PROMPT_CUSTOMER_SERVICE,
         model="gpt-4o-mini",
         input=f"Почему стоит почитать книгу {book_title} автора {author}? Если книга тебе неизвестна, так и скажи."
@@ -99,7 +69,7 @@ def describe_book(book_title, author):
 
 def describe_books(books):
     """Отправка запроса на описание нескольких книг"""
-    response = client.responses.create(
+    response = oai_client.responses.create(
         instructions=SYS_PROMPT_CUSTOMER_SERVICE,
         model="gpt-4o-mini",
         input=f"""
@@ -120,29 +90,32 @@ async def get_mean_btc(message: types.Message):
     max_btc = np.max(averages)
     await message.reply(f"Symbol: {symbol}\nMean price: {mean_btc:.2f}\nMin price: {min_btc:.2f}\nMax price: {max_btc:.2f}\n")
     
-@dp.message_handler(commands=['add'])
-async def add_book(message: types.Message):
+@dp.message_handler(commands=['add', 'describe'])
+async def add_book(message: types.Message):    
     # Используем регулярное выражение для разбора команды
-    client = GoogleAPIClient(book_id=SPREADSHEET_ID, sheet_title=RANGE_NAME)
-    data = client.get_sheet(dictionary=False)
-    
-    pattern = r"\/add\s(.+?)\s[-—]\s(.+)"
+    pattern = r"\/(add|describe)\s(.+?)\s[-—]\s(.+)"
     match = re.match(pattern, message.text)
     if not match:
-        await message.reply("Пожалуйста, введите данные в формате: /add Фамилия автора, Имя автора - Книга")
+        await message.reply(f"Пожалуйста, введите данные в формате: `{message.text.split[' '][0]} Фамилия автора, Имя автора - Книга` ")
         return
-    author = match.group(1).strip()
-    book = match.group(2).strip()
-    user = message.from_user.username or message.from_user.first_name
-    # выясняем количество книг
-    total = 0
-    for num, line in enumerate(data):
-        if line[0] and line[1] == 'FALSE':
-            total = line[0], num
-    total, num = int(total[0]), total[1]
-    client.add_values_from_list(values=[total + 1, 'FALSE', book, author, f'@{user}'], start_row=num+2)
+    isAdd = match.group(1).strip() == 'add'
+    author = match.group(2).strip()
+    book = match.group(3).strip()
     
-    await message.reply("Книга сохранена")
+    if isAdd:
+        user = message.from_user.username or message.from_user.first_name
+        # выясняем количество книг
+        total = 0
+        
+        data = g_client.get_sheet(dictionary=False)
+        for num, line in enumerate(data):
+            if line[0] and line[1] == 'FALSE':
+                total = line[0], num
+        total, num = int(total[0]), total[1]
+        g_client.add_values_from_list(values=[total + 1, 'FALSE', book, author, f'@{user}'], start_row=num+2)
+        
+        await message.reply("Книга сохранена")
+        
     await message.reply(describe_book(book_title=book, author=author))
 
 @dp.poll_answer_handler()
