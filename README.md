@@ -1,4 +1,4 @@
-# Simple template Telegram bot 
+# Bot for reading club
 ## using:
 - docker-compose
 - poetry
