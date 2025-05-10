@@ -16,8 +16,9 @@ class GoogleAPIClient:
         self,
         book_id: Optional[str] = None,
         sheet_title: Optional[str] = None,
+        sheet_id: str = 0,
         start_col: str = 'A',
-        last_col='AY',
+        last_col='AY'
     ):
         """
         Args:
@@ -32,6 +33,7 @@ class GoogleAPIClient:
         self.__sheet_title = sheet_title
         self.__start_col = start_col
         self.__last_col = last_col
+        self.sheet_id = sheet_id
 
     def add_values_from_list(self, values: List, start_row: int, pause: float = .0):
         """ Запись данных на лист с добавлением новой строки перед вставкой
@@ -46,7 +48,7 @@ class GoogleAPIClient:
                 {
                     "insertDimension": {
                         "range": {
-                            "sheetId": 1261866365,  # ID листа (не имя)
+                            "sheetId": self.sheet_id,  # ID листа (не имя)
                             "dimension": "ROWS",
                             "startIndex": start_row - 1,  # где добавить строку
                             "endIndex": start_row  # одна строка

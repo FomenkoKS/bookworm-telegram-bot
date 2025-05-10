@@ -16,14 +16,15 @@ load_dotenv()
 TOKEN = os.getenv('TOKEN')
 SPREADSHEET_ID = os.getenv('SPREADSHEET_ID')
 OPEN_API_KEY = os.getenv('OPEN_API_KEY')
-RANGE_NAME = "База"
+RANGE_NAME = os.getenv('RANGE_NAME')
+SHEET_ID = os.getenv('SHEET_ID')
 SYS_PROMPT_CUSTOMER_SERVICE = "Ты помощник в книжном клубе. Отвечай без использования символов разметки и не задавай уточняющих вопросов."
     
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
 oai_client = OpenAI(api_key=OPEN_API_KEY)
-g_client = GoogleAPIClient(book_id=SPREADSHEET_ID, sheet_title=RANGE_NAME)
+g_client = GoogleAPIClient(book_id=SPREADSHEET_ID, sheet_title=RANGE_NAME, sheet_id = SHEET_ID)
 
 def get_title_and_choices():
     # выясняем номер заседания

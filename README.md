@@ -9,10 +9,11 @@
 ```sh
 mkdir bot && cd $_
 git clone https://github.com/FomenkoKS/bookworm-telegram-bot.git .
+cp example.env .env
 cd bot
 ```
-Change .env past your TOKEN from BotFather (save and quit)
-
+Change .env
+Download creds of your service account as creds.json (https://cloud.google.com/iam/docs/service-accounts-create)
 
 ## Starting
 ```sh
