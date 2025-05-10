@@ -4,6 +4,8 @@
 - poetry
 - loguru
 - aiogram
+- google_api-python-client
+- openai
 
 ## Preparation
 ```sh
@@ -12,7 +14,8 @@ git clone https://github.com/FomenkoKS/bookworm-telegram-bot.git .
 cp example.env .env
 cd bot
 ```
-Change .env
+Edit .env with your tokens and other information
+
 Download creds of your service account as creds.json (https://cloud.google.com/iam/docs/service-accounts-create)
 
 ## Starting
