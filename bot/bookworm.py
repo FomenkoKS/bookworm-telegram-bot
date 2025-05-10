@@ -81,22 +81,16 @@ def describe_books(books):
     
     return response.output_text
 
-@dp.message_handler(commands=['mean_btc'])
-async def get_mean_btc(message: types.Message):
-    symbol = 'BTCUSDT'
-    averages = get_binance_avg_price(symbol)
-    mean_btc = np.mean(averages)
-    min_btc = np.min(averages)
-    max_btc = np.max(averages)
-    await message.reply(f"Symbol: {symbol}\nMean price: {mean_btc:.2f}\nMin price: {min_btc:.2f}\nMax price: {max_btc:.2f}\n")
-    
 @dp.message_handler(commands=['add', 'describe'])
 async def add_book(message: types.Message):    
     # Используем регулярное выражение для разбора команды
     pattern = r"\/(add|describe)\s(.+?)\s[-—]\s(.+)"
     match = re.match(pattern, message.text)
     if not match:
-        await message.reply(f"Пожалуйста, введите данные в формате: `{message.text.split[' '][0]} Фамилия автора, Имя автора - Книга` ")
+        await message.reply(
+            f"Пожалуйста, введите данные в формате: <code>{message.text.split(' ')[0]} Фамилия автора, Имя автора — Книга</code>",
+            parse_mode = "HTML"
+        )
         return
     isAdd = match.group(1).strip() == 'add'
     author = match.group(2).strip()
@@ -114,7 +108,19 @@ async def add_book(message: types.Message):
         total, num = int(total[0]), total[1]
         g_client.add_values_from_list(values=[total + 1, 'FALSE', book, author, f'@{user}'], start_row=num+2)
         
-        await message.reply("Книга сохранена")
+        await message.reply(
+            "Книга сохранена",
+            reply_markup = types.InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [
+                        {
+                            "text":"Проверить список книг", 
+                            "url": "https://docs.google.com/spreadsheets/d/1dI8FGgefou4Jnz2MEFk1Ey5BbFux4uV5dHgwjC4UMgM/edit?gid=1261866365#gid=1261866365"
+                        }
+                    ]
+                ]
+            ),
+        )
         
     await message.reply(describe_book(book_title=book, author=author))
 
