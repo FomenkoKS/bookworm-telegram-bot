@@ -4,15 +4,17 @@
 - poetry
 - loguru
 - aiogram
+- openai
+- 
 
 ## Preparation
 ```sh
-mkdir bot && cd $_
+mkdir bookworm_bot && cd $_
 git clone https://github.com/FomenkoKS/bookworm-telegram-bot.git .
 cp example.env .env
-cd bot
 ```
 Change .env
+
 Download creds of your service account as creds.json (https://cloud.google.com/iam/docs/service-accounts-create)
 
 ## Starting

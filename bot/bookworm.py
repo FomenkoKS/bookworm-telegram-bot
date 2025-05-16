@@ -89,7 +89,7 @@ async def add_book(message: types.Message):
     match = re.match(pattern, message.text)
     if not match:
         await message.reply(
-            f"Пожалуйста, введите данные в формате: <code>{message.text.split(' ')[0]} Фамилия автора, Имя автора — Книга</code>",
+            f"Пожалуйста, введите данные в формате: <code>{message.text.split(' ')[0].split('@')[0]} Фамилия автора, Имя автора — Книга</code>",
             parse_mode = "HTML"
         )
         return
