@@ -4,10 +4,7 @@
 - poetry
 - loguru
 - aiogram
-<<<<<<< HEAD
 - openai
-- 
-=======
 - google_api-python-client
 - openai
 
