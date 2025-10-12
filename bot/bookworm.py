@@ -17,9 +17,7 @@ COL_STATUS = 1
 COL_TITLE = 2
 COL_AUTHOR = 3
 COL_PROPOSER = 4
-COL_MEETING = 5
 
-STATUS_UNREAD = 'FALSE'
 COMMAND_PATTERN = r"/(add|describe)\s(.+?)\s[-—]\s(.+)"
 
 # Настройка логирования
@@ -57,23 +55,6 @@ g_client = GoogleAPIClient(
 )
 
 
-def extract_meeting_number(data: List[List]) -> int:
-    """Извлекает номер текущего заседания из данных таблицы."""
-    for line in data:
-        if len(line) > COL_MEETING and 'седание' in line[COL_MEETING]:
-            _, num_str = line[COL_MEETING].split('№')
-            return int(num_str.strip())
-    return 0
-
-
-def get_total_unread_books(data: List[List]) -> int:
-    """Возвращает общее количество непрочитанных книг."""
-    for line in data:
-        if line[COL_NUM] and line[COL_STATUS] == STATUS_UNREAD:
-            return int(line[COL_NUM])
-    return 0
-
-
 def format_book(line: List[str]) -> str:
     """Форматирует информацию о книге для отображения."""
     return f"«{line[COL_TITLE]}» — {line[COL_AUTHOR]} ({line[COL_PROPOSER]})"
@@ -83,25 +64,31 @@ def get_title_and_choices() -> Tuple[str, List[str]]:
     """Генерирует заголовок голосования и случайный выбор книг."""
     data = g_client.get_sheet(dictionary=False)
     
-    # Определяем номер следующего заседания
-    current_meeting = extract_meeting_number(data)
-    title = f"Выбираем книгу для заседания №{current_meeting + 1}!"
-    
-    # Получаем количество непрочитанных книг
-    total = get_total_unread_books(data)
-    
-    # Выбираем 10 случайных номеров книг
-    choices = set(random.sample(range(1, total + 1), min(10, total)))
-    
-    # Собираем книги по выбранным номерам
-    books = [
-        format_book(line)
-        for line in data
-        if (line[COL_NUM] and 
-            line[COL_STATUS] == STATUS_UNREAD and 
-            int(line[COL_NUM]) in choices)
-    ]
-    
+    for line in data:
+        if len(line) > 5 and 'седание' in line[5]:
+            meeting = line[5]
+            
+    _, num = meeting.split('№')
+    title = f"Выбираем книгу для заседания №{int(num.strip())+1}!"
+    # выясняем количество книг
+    total = 0
+    for line in data:
+        if line[0] and line[1] == 'FALSE':
+            total = line[0]
+    # "бросаем кости"
+    choices = random.sample(range(1, int(total) + 1), 10)
+    # перебираем книги
+    books = []
+
+    for line in data:
+        if not line[0] or line[1] != 'FALSE':
+            continue
+        num = int(line[0])
+        
+        if num in choices:
+            book = f"«{line[2]}» — {line[3]} ({line[4]})"
+            books.append(book)
+            
     return title, books
 
 
